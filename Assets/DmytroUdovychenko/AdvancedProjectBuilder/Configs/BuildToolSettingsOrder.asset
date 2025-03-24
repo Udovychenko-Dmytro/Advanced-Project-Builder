@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2c66e07a41bb4ff897a0f761f88dc7f, type: 3}
+  m_Name: BuildToolSettingsOrder
+  m_EditorClassIdentifier: 
+  orderedSettings:
+  - {fileID: 11400000, guid: a0605e5d10e064effba4d283c4ad93ce, type: 2}
+  - {fileID: 11400000, guid: bd6c6b9098ffe438197b450f2c28e59b, type: 2}
+  - {fileID: 11400000, guid: 387c1bd4c3298485c81b2eb1cd847f57, type: 2}
+  - {fileID: 11400000, guid: 9dcb8d19943c648ea80b532beffde11a, type: 2}
+  - {fileID: 11400000, guid: 280cc586b51684ef588490d4823e474c, type: 2}
+  - {fileID: 11400000, guid: d0b5364cb789d4210a729532ecad2c01, type: 2}
+  - {fileID: 11400000, guid: d2cdc2927b57d4a30808ffcb5bc16ada, type: 2}
+  Path: 

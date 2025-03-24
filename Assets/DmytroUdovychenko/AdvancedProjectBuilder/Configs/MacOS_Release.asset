@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02e9c5d8288a54e93acd442b1a05613e, type: 3}
+  m_Name: MacOS_Release
+  m_EditorClassIdentifier: 
+  BuildTarget: 2
+  BuildOptions: 524288
+  BuildConfigType: 3
+  DefineSymbols:
+  - RELEASE
+  OverrideProductName: 0
+  ProductName: 
+  OverrideUnityServiceId: 0
+  UnityProjectId: 
+  UnityProjectOrganizationId: 
+  UnityProjectName: 
+  OverrideBundleId: 0
+  BundleId: com.macos.release
+  UseAppBundle: 0
+  SplitApplicationBinary: 0
+  UseKeystore: 0
+  AndroidKeystorePath: 
+  AndroidKeystorePass: 
+  AndroidKeyaliasName: 
+  AndroidKeyaliasPass: 
+  EnableAutomaticSigning: 0
+  AppleDeveloperTeamID: 

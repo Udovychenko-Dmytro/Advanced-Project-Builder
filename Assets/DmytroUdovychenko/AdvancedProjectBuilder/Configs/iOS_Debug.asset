@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02e9c5d8288a54e93acd442b1a05613e, type: 3}
+  m_Name: iOS_Debug
+  m_EditorClassIdentifier: 
+  BuildTarget: 9
+  BuildOptions: 524289
+  BuildConfigType: 1
+  DefineSymbols:
+  - DEBUG
+  OverrideUnityServiceId: 0
+  UnityProjectId: 
+  UnityProjectOrganizationId: 
+  OverrideBundleId: 1
+  BundleId: com.dmytroudovychenko.iostest
+  UseAppBundle: 0
+  SplitApplicationBinary: 0
+  UseKeystore: 0
+  AndroidKeystorePath: 
+  AndroidKeystorePass: 
+  AndroidKeyaliasName: 
+  AndroidKeyaliasPass: 
+  EnableAutomaticSigning: 1
+  AppleDeveloperTeamID: 123team456
