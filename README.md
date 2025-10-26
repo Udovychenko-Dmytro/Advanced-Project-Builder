@@ -3,7 +3,7 @@
 
 # Advanced Project Builder
 
-`version 1.0`
+`version 1.2.0`
 
 ## Overview
 
@@ -67,6 +67,7 @@ The window displays your build configurations and provides four main actions:
 - `BUILD_VERSION_NUMBER` – Android ([bundleVersionCode](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerSettings.Android-bundleVersionCode.html)), iOS ([buildNumber](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerSettings.iOS-buildNumber.html))
 - `BUILD_PRODUCT_NAME` – [Application.productName](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Application-productName.html)
 - `BUNDLE_ID` – [Application.identifier](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Application-identifier.html)
+- `CREATE_ZIP` – "true" or "false"
 
 **Unity Services ID Settings:**
 
@@ -87,6 +88,7 @@ The window displays your build configurations and provides four main actions:
 **iOS Build Settings:**
 
 - `APPLE_DEVELOPER_TEAM_ID` – [Apple Developer Team ID](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/PlayerSettings.iOS-appleDeveloperTeamID.html)
+- `APPLE_BUILD_COCOA_PODS` –  [Cococa Pods Install](https://guides.cocoapods.org/using/using-cocoapods)
 
 ---
 
@@ -114,6 +116,7 @@ set BUILD_FILE_NAME=Commandline-Android.apk
   -BUILD_PATH="%BUILD_PATH_NAME%\\%BUILD_FILE_NAME%" ^
   -BUILD_PLATFORM="Android" ^
   -BUILD_OPTION="Development;CompressWithLz4HC" ^
+  -CREATE_ZIP="true" ^
   -UNITY_SERVICE_ID_OVERRIDE="true" ^
   -UNITY_SERVICE_PROJECT_ID="b6dd78fa-3c9f-4134-9b80-77b07dc4b0e2" ^
   -UNITY_SERVICE_ORGANIZATION_ID="blabla-studio" ^
@@ -128,6 +131,8 @@ set BUILD_FILE_NAME=Commandline-Android.apk
   -ANDROID_KEYSTORE_PASS="12345678" ^
   -ANDROID_KEYALIAS_NAME="Advanced Project Builder" ^
   -ANDROID_KEYALIAS_PASS="qwerty" ^
+  -APPLE_DEVELOPER_TEAM_ID="TeamId" ^
+  -APPLE_BUILD_COCOA_PODS="true"
 ```
 
 
@@ -154,6 +159,7 @@ BUILD_FILE_NAME="test.apk"
   -BUILD_PATH="$BUILD_PATH_NAME/$BUILD_FILE_NAME" \
   -BUILD_PLATFORM="Android" \
   -BUILD_OPTION="Development;CompressWithLz4HC" \
+  -CREATE_ZIP="true" \
   \
   -BUILD_PRODUCT_NAME="$PRODUCT_NAME" \
   -BUNDLE_ID="com.commandline.Android" \
@@ -166,7 +172,10 @@ BUILD_FILE_NAME="test.apk"
   -ANDROID_KEYSTORE_PATH="Assets/DmytroUdovychenko/AdvancedProjectBuilder/Examples/key.keystore" \
   -ANDROID_KEYSTORE_PASS="12345678" \
   -ANDROID_KEYALIAS_NAME="Advanced Project Builder" \
-  -ANDROID_KEYALIAS_PASS="qwerty"
+  -ANDROID_KEYALIAS_PASS="qwerty" \
+  \
+  -APPLE_DEVELOPER_TEAM_ID="true" \
+  -APPLE_BUILD_COCOA_PODS="true"
 ```
 
 
