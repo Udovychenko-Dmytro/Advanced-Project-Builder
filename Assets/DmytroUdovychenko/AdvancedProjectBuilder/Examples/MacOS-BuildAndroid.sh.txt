@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-UNITY_PATH="/Applications/Unity/Hub/Editor/2021.3.34f1/Unity.app/Contents/MacOS/Unity"
-PROJECT_PATH="/Users/dmytroudovychenko/Dev/My/advanced-project-builder"
-BUILD_METHOD="AdvancedProjectBuilderCommandLineRunner.Build"
+UNITY_PATH="/Applications/Unity/Hub/Editor/2021.3.45f2/Unity.app/Contents/MacOS/Unity"
+PROJECT_PATH="/Users/dmytroudovychenko/Dev/My/Tools/advanced-project-builder"
+BUILD_METHOD="DmytroUdovychenko.AdvancedProjectBuilderTool.AdvancedProjectBuilderCommandLine.Build"
 BUILD_PATH_NAME="/Users/dmytroudovychenko/Dev/Builds"
 PRODUCT_NAME="AdvancedProjectBuilder"
 BUILD_FILE_NAME="test.apk"

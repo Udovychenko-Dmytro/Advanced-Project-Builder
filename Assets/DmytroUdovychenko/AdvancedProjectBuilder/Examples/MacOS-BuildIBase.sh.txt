@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-UNITY_PATH="/Applications/Unity/Hub/Editor/2021.3.34f1/Unity.app/Contents/MacOS/Unity"
-PROJECT_PATH="/Users/dmytroudovychenko/Dev/My/advanced-project-builder"
-BUILD_METHOD="AdvancedProjectBuilderCommandLineRunner.Build"
+UNITY_PATH="/Applications/Unity/Hub/Editor/2021.3.45f2/Unity.app/Contents/MacOS/Unity"
+PROJECT_PATH="/Users/dmytroudovychenko/Dev/My/Tools/advanced-project-builder"
+BUILD_METHOD="DmytroUdovychenko.AdvancedProjectBuilderTool.AdvancedProjectBuilderCommandLine.Build"
 BUILD_PATH_NAME="/Users/dmytroudovychenko/Dev/Builds"
 PRODUCT_NAME="AdvancedProjectBuilder"
 BUILD_FILE_NAME="Commandline-ios"
@@ -12,7 +12,6 @@ BUILD_FILE_NAME="Commandline-ios"
   -quit \
   -projectPath "$PROJECT_PATH" \
   -executeMethod "$BUILD_METHOD" \
-  //-buildTarget Android \
   -logFile "$BUILD_PATH_NAME/build.log" \
   \
   -BUILD_CONFIGURATION_NAME="" \
@@ -22,6 +21,7 @@ BUILD_FILE_NAME="Commandline-ios"
   -UNITY_SERVICE_ID_OVERRIDE="true" \
   -UNITY_SERVICE_PROJECT_ID="b6dd78fa-3c9f-4134-9b80-77b07dc4b0e2" \
   -UNITY_SERVICE_ORGANIZATION_ID="blabla-studio" \
+  -CREATE_ZIP="true" \
   \
   -BUILD_PRODUCT_NAME="$PRODUCT_NAME" \
   -BUNDLE_ID="com.commandline.ios" \
@@ -36,4 +36,5 @@ BUILD_FILE_NAME="Commandline-ios"
   -ANDROID_KEYALIAS_NAME="Advanced Project Builder" \
   -ANDROID_KEYALIAS_PASS="qwerty" \
   \
-  -APPLE_DEVELOPER_TEAM_ID="TeamId"
+  -APPLE_DEVELOPER_TEAM_ID="TeamId" \
+  -APPLE_BUILD_COCOA_PODS="true"

@@ -1,20 +1,21 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Build.Reporting;
 
 namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 {
     public partial class AdvancedProjectBuilderConfig
     {
-        public bool UseAppBundle;
-        public bool SplitApplicationBinary;
-        public bool UseKeystore;
+        public bool   UseAppBundle;
+        public bool   SplitApplicationBinary;
+        public bool   UseKeystore;
         public string AndroidKeystorePath;
         public string AndroidKeystorePass;
         public string AndroidKeyaliasName;
         public string AndroidKeyaliasPass;
     }
 
-    public partial class AdvancedProjectBuilderSettingsEditor
+    public class AndroidExtension : IPlatformSpecifics
     {
         private SerializedProperty m_useAppBundle;
         private SerializedProperty m_splitApplicationBinary;
@@ -24,19 +25,19 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         private SerializedProperty m_androidKeyaliasName;
         private SerializedProperty m_androidKeyaliasPass;
 
-        private void ReadParametersAndroid()
+        public void ReadPlatformSpecifics(SerializedObject serializedObject, Object target)
         {
             m_useAppBundle           = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.UseAppBundle));
             m_splitApplicationBinary = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.SplitApplicationBinary));
-            
+
             m_useKeystore         = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.UseKeystore));
             m_androidKeystorePath = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.AndroidKeystorePath));
             m_androidKeystorePass = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.AndroidKeystorePass));
             m_androidKeyaliasName = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.AndroidKeyaliasName));
             m_androidKeyaliasPass = serializedObject.FindProperty(nameof(AdvancedProjectBuilderConfig.AndroidKeyaliasPass));
         }
-        
-        private void DrawParametersAndroid()
+
+        public void DrawPlatformSpecifics(SerializedObject serializedObject, Object target)
         {
             EditorGUILayout.LabelField("Android Settings", EditorStyles.boldLabel);
 
@@ -53,27 +54,28 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 EditorGUILayout.PropertyField(m_androidKeyaliasPass,  new GUIContent("Keyalias Pass")); 
             }
         }
-    }
 
-    public partial class AdvancedProjectBuilder
-    {
-        private static void SetPlatformSpecificsAndroid(AdvancedProjectBuilderConfig settings)
+        public void SetPlatformSpecifics(AdvancedProjectBuilderConfig config)
         {
-            EditorUserBuildSettings.buildAppBundle = settings.UseAppBundle;
-            PlayerSettings.Android.useAPKExpansionFiles = settings.SplitApplicationBinary;
-            PlayerSettings.Android.useCustomKeystore = settings.UseKeystore;
-            
-            LogMessage($"Set buildAppBundle: {settings.UseAppBundle}");
-            LogMessage($"Set useAPKExpansionFiles: {settings.SplitApplicationBinary}");
-            LogMessage($"Set useCustomKeystore: {settings.UseKeystore}");
-            
-            if (settings.UseKeystore)
+            EditorUserBuildSettings.buildAppBundle      = config.UseAppBundle;
+            PlayerSettings.Android.useAPKExpansionFiles = config.SplitApplicationBinary;
+            PlayerSettings.Android.useCustomKeystore    = config.UseKeystore;
+
+            AdvancedProjectBuilder.LogMessage($"Set buildAppBundle: {config.UseAppBundle}");
+            AdvancedProjectBuilder.LogMessage($"Set useAPKExpansionFiles: {config.SplitApplicationBinary}");
+            AdvancedProjectBuilder.LogMessage($"Set useCustomKeystore: {config.UseKeystore}");
+
+            if (config.UseKeystore)
             {
-                PlayerSettings.Android.keystoreName = settings.AndroidKeystorePath;
-                PlayerSettings.Android.keystorePass = settings.AndroidKeystorePass;
-                PlayerSettings.Android.keyaliasName = settings.AndroidKeyaliasName;
-                PlayerSettings.Android.keyaliasPass = settings.AndroidKeyaliasPass;
+                PlayerSettings.Android.keystoreName = config.AndroidKeystorePath;
+                PlayerSettings.Android.keystorePass = config.AndroidKeystorePass;
+                PlayerSettings.Android.keyaliasName = config.AndroidKeyaliasName;
+                PlayerSettings.Android.keyaliasPass = config.AndroidKeyaliasPass;
             }
+        }
+        public void OnPostprocessBuild(BuildPlayerOptions buildPlayerOptions, BuildReport report, AdvancedProjectBuilderConfig config)
+        {
+
         }
     }
 }

@@ -19,36 +19,38 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         private const string ArgumentEqualSign = "=";
         private const string ArgumentSplitSign = ";";
 
-        private const string BuildConfigName = "BUILD_CONFIGURATION_NAME";
-        private const string BuildPath = "BUILD_PATH";
+        private const string BuildConfigName    = "BUILD_CONFIGURATION_NAME";
+        private const string BuildPath          = "BUILD_PATH";
         private const string BuildPlatformParam = "BUILD_PLATFORM";
-        private const string BuildOptionsParam = "BUILD_OPTION";
-        private const string BuildDefines = "BUILD_DEFINES";
-        
-        private const string BundleId = "BUNDLE_ID";
-        private const string BuildVersion = "BUILD_VERSION";
-        private const string BundleVersionNumber = "BUILD_VERSION_NUMBER";
-        private const string ProductName = "BUILD_PRODUCT_NAME";
-        
-        private const string OverrideUnityServiceId = "UNITY_SERVICE_ID_OVERRIDE";
-        private const string UnityProjectId = "UNITY_SERVICE_PROJECT_ID";
+        private const string BuildOptionsParam  = "BUILD_OPTION";
+        private const string BuildDefines       = "BUILD_DEFINES";
+        private const string CreateZip          = "CREATE_ZIP";
+
+        private const string BundleId            = "BUNDLE_ID";
+        private const string BuildVersion        = "BUILD_VERSION";
+        private const string BundleVersionNumber = "BUNDLE_VERSION_NUMBER";
+        private const string ProductName         = "BUILD_PRODUCT_NAME";
+
+        private const string OverrideUnityServiceId     = "UNITY_SERVICE_ID_OVERRIDE";
+        private const string UnityProjectId             = "UNITY_SERVICE_PROJECT_ID";
         private const string UnityProjectOrganizationId = "UNITY_SERVICE_ORGANIZATION_ID";
-        
+
         private const string AndroidBuildAppBundle = "ANDROID_APP_BUNDLE";
         private const string AndroidSplitAppBinary = "ANDROID_SPLIT_BINARY";
-        private const string AndroidUseKeystore  = "ANDROID_USE_KEYSTORE";
-        private const string AndroidKeystorePath = "ANDROID_KEYSTORE_PATH";
-        private const string AndroidKeystorePass = "ANDROID_KEYSTORE_PASS";
-        private const string AndroidKeyaliasName = "ANDROID_KEYALIAS_NAME";
-        private const string AndroidKeyaliasPass = "ANDROID_KEYALIAS_PASS";
-        
+        private const string AndroidUseKeystore    = "ANDROID_USE_KEYSTORE";
+        private const string AndroidKeystorePath   = "ANDROID_KEYSTORE_PATH";
+        private const string AndroidKeystorePass   = "ANDROID_KEYSTORE_PASS";
+        private const string AndroidKeyaliasName   = "ANDROID_KEYALIAS_NAME";
+        private const string AndroidKeyaliasPass   = "ANDROID_KEYALIAS_PASS";
+
         private const string AppleDeveloperTeamID = "APPLE_DEVELOPER_TEAM_ID";
-        
+        private const string AppleBuildCocoaPods  = "APPLE_BUILD_COCOA_PODS";
+
         private static Dictionary<string, string> commandLineArguments = new Dictionary<string, string>();
-        
+
         public static void Build()
         {
-            commandLineArguments = GetCommandlineArguments();
+            commandLineArguments      = GetCommandlineArguments();
             string buildConfiguration = GetParamValue(BuildConfigName);
 
             TryGetBuildConfigByName(buildConfiguration, out AdvancedProjectBuilderConfig buildConfig);
@@ -63,20 +65,20 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             {
                 AdvancedProjectBuilder.LogMessage($"Config `{buildConfiguration}` found");
             }
-            
+
             AdvancedProjectBuilder.LogMessage($"BuildConfig: {buildConfig.name}. Updating build configuration from command line arguments.");
-            
+
             UpdateBuildConfig(buildConfig);
-            
+
             AdvancedProjectBuilder.LogMessage("BUILD");
-            
+
             AdvancedProjectBuilder.Build(buildConfig);
         }
 
         private static bool TryGetBuildConfigByName(string targetConfigName, out AdvancedProjectBuilderConfig targetBuilderConfig)
         {
             List<AdvancedProjectBuilderConfig> configList = AdvancedProjectBuilderSettings.FindAllBuildToolSettings();
-            
+
             foreach (AdvancedProjectBuilderConfig config in configList)
             {
                 if (config.name == targetConfigName)
@@ -93,7 +95,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         private static Dictionary<string, string>  GetCommandlineArguments()
         {
             string[] commandLineRawArguments = Environment.GetCommandLineArgs();
-            
+
             Dictionary<string, string> arguments = new Dictionary<string, string>();
 
             foreach (string argument in commandLineRawArguments)
@@ -105,16 +107,16 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 
                     // Split by "="
                     string[] keyValuePair = noDashArgument.Split(ArgumentEqualSign);
-                    
+
                     if (keyValuePair.Length == 2)
                     {
-                        string key = keyValuePair[0];
+                        string key   = keyValuePair[0];
                         string value = keyValuePair[1];
 
                         if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
                         {
                             arguments[key] = value;
-                            
+
                             if (key.Contains("PASS"))
                             {
                                 AdvancedProjectBuilder.LogMessage($"CommandLine Argument Found:{key}=***");
@@ -146,10 +148,12 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             SetBuildTarget(buildBuilderConfig);
             SetBuildOptions(buildBuilderConfig);
             SetDefines(buildBuilderConfig);
+            SetCreateZip(buildBuilderConfig);
             SetProductName(buildBuilderConfig);
             SetBundleId(buildBuilderConfig);
             SetBuildVersion(buildBuilderConfig);
             SetUnityServiceId(buildBuilderConfig);
+
             UpdateAndroidBuildConfig(buildBuilderConfig);
             UpdateIosBuildConfig(buildBuilderConfig);
         }
@@ -181,14 +185,34 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             {
                 return;
             }
-            
+
             string[] definesList = SplitParameter(buildDefinesRaw);
-            
+
             BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(buildBuilderConfig.BuildTarget);
-            AdvancedProjectBuilder.SetDefineSymbols(targetGroup, definesList);
+            DefineSymbolsEditor.SetDefineSymbols(targetGroup, definesList);
             AdvancedProjectBuilder.LogMessage($"Define: '{GetOnStringList(definesList)}'");
         }
-        
+
+        private static void SetCreateZip(AdvancedProjectBuilderConfig buildBuilderConfig)
+        {
+            string createZipRaw = GetParamValue(CreateZip);
+
+            if (string.IsNullOrEmpty(createZipRaw))
+            {
+                return;
+            }
+
+            if (bool.TryParse(createZipRaw, out bool result))
+            {
+                buildBuilderConfig.CreateZip = result;
+                AdvancedProjectBuilder.LogMessage($"CreateZip: '{result}'");
+            }
+            else
+            {
+                AdvancedProjectBuilder.LogError($"CreateZip param is wrong: '{createZipRaw}'");
+            }
+        }
+
         private static void SetProductName(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             string productName = GetParamValue(ProductName);
@@ -197,11 +221,11 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             {
                 buildBuilderConfig.OverrideProductName = true;
                 buildBuilderConfig.ProductName = productName;
-            
+
                 AdvancedProjectBuilder.LogMessage($"Product Name: '{productName}'");
             }
         }
-        
+
         private static void SetBundleId(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             string bundleId = GetParamValue(BundleId);
@@ -209,15 +233,15 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             if (!string.IsNullOrEmpty(bundleId))
             {
                 buildBuilderConfig.OverrideBundleId = true;
-                buildBuilderConfig.BundleId = bundleId;
-            
+                buildBuilderConfig.BundleId         = bundleId;
+
                 AdvancedProjectBuilder.LogMessage($"Bundle ID: '{bundleId}'");
             }
         }
-        
+
         private static void SetBuildVersion(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
-            string buildVersion = GetParamValue(BuildVersion);
+            string buildVersion        = GetParamValue(BuildVersion);
             string bundleVersionNumber = GetParamValue(BundleVersionNumber);
 
             if (string.IsNullOrEmpty(buildVersion))
@@ -227,7 +251,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 
             buildBuilderConfig.BuildVersion = buildVersion;
             AdvancedProjectBuilder.LogMessage($"BuildVersion: '{buildVersion}'");
-            
+
             if (string.IsNullOrEmpty(bundleVersionNumber))
             {
                 return;
@@ -236,14 +260,14 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             buildBuilderConfig.BundleVersionNumber = bundleVersionNumber;
             AdvancedProjectBuilder.LogMessage($"BundleVersionNumber: '{bundleVersionNumber}'");
         }
-        
+
         private static void SetUnityServiceId(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             string overrideUnityServiceIdRaw = GetParamValue(OverrideUnityServiceId);
             string unityProjectId = GetParamValue(UnityProjectId);
             string unityProjectOrganizationId = GetParamValue(UnityProjectOrganizationId);
 
-            if (   string.IsNullOrEmpty(overrideUnityServiceIdRaw) 
+            if (   string.IsNullOrEmpty(overrideUnityServiceIdRaw)
                 || string.IsNullOrEmpty(unityProjectId)
                 || string.IsNullOrEmpty(unityProjectOrganizationId))
             {
@@ -255,31 +279,33 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 AdvancedProjectBuilder.LogError($" Override Unity Service Id is wrong: '{overrideUnityServiceIdRaw}'");
             }
 
-            buildBuilderConfig.OverrideUnityServiceId = overrideUnityService;
-            buildBuilderConfig.UnityProjectId = unityProjectId;
+            buildBuilderConfig.OverrideUnityServiceId     = overrideUnityService;
+            buildBuilderConfig.UnityProjectId             = unityProjectId;
             buildBuilderConfig.UnityProjectOrganizationId = unityProjectOrganizationId;
-            
+
             AdvancedProjectBuilder.LogMessage($"Unity Service Id: enable-{overrideUnityService}, '{unityProjectId}' / '{unityProjectOrganizationId}'");
         }
 
         private static void SetBuildOptions(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             string buildOptionsRaw = GetParamValue(BuildOptionsParam);
+
             if (string.IsNullOrEmpty(buildOptionsRaw))
             {
                 return;
             }
-            
+
             string[] optionsParts = SplitParameter(buildOptionsRaw);
 
             BuildOptions finalOptions = BuildOptions.None;
+
             foreach (string part in optionsParts)
             {
                 string trimmed = part.Trim();
-                
+
                 if (Enum.TryParse<BuildOptions>(trimmed, true, out BuildOptions parsedOption))
                 {
-                    finalOptions |= parsedOption; 
+                    finalOptions |= parsedOption;
                 }
                 else
                 {
@@ -288,14 +314,14 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             }
 
             buildBuilderConfig.BuildOptions = finalOptions;
-    
+
             Debug.Log($"Final BuildOptions: '{finalOptions}'");
         }
-        
+
         private static void UpdateAndroidBuildConfig(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             string useAppBundleRaw = GetParamValue(AndroidBuildAppBundle);
-            
+
             if (bool.TryParse(useAppBundleRaw, out bool useAppBundle))
             {
                 buildBuilderConfig.UseAppBundle = useAppBundle;
@@ -307,7 +333,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             }
 
             string splitBinaryRaw = GetParamValue(AndroidSplitAppBinary);
-            
+
             if (bool.TryParse(splitBinaryRaw, out bool splitBinary))
             {
                 buildBuilderConfig.SplitApplicationBinary = splitBinary;
@@ -318,18 +344,21 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 AdvancedProjectBuilder.LogError($"Wrong SplitApplicationBinary: '{splitBinaryRaw}'");
             }
 
-            string useKeystoreRaw = GetParamValue(AndroidUseKeystore);
+            string useKeystoreRaw      = GetParamValue(AndroidUseKeystore);
             string androidKeystorePath = GetParamValue(AndroidKeystorePath);
             string androidKeystorePass = GetParamValue(AndroidKeystorePass);
             string androidKeyaliasName = GetParamValue(AndroidKeyaliasName);
             string androidKeyaliasPass = GetParamValue(AndroidKeyaliasPass);
-            
+
             if (bool.TryParse(useKeystoreRaw, out bool useKeystore))
             {
                 buildBuilderConfig.UseKeystore = useKeystore;
                 AdvancedProjectBuilder.LogMessage($"UseKeystore: '{useKeystore}'");
-                
-                if (!useKeystore) return;
+
+                if (!useKeystore)
+                {
+                    return;
+                }
             }
             else
             {
@@ -352,16 +381,24 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 AdvancedProjectBuilder.LogError($"Wrong KeystoreData");
             }
         }
-        
+
         private static void UpdateIosBuildConfig(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             string appleDeveloperTeamId = GetParamValue(AppleDeveloperTeamID);
-            
+
             if (!string.IsNullOrEmpty(appleDeveloperTeamId))
             {
                 buildBuilderConfig.EnableAutomaticSigning = true;
                 buildBuilderConfig.AppleDeveloperTeamID = appleDeveloperTeamId;
                 AdvancedProjectBuilder.LogMessage($"EnableAutomaticSigning: ID-'{AppleDeveloperTeamID}'");
+            }
+
+            string appleBuildCocoaPods = GetParamValue(AppleBuildCocoaPods);
+
+            if (bool.TryParse(appleBuildCocoaPods, out bool buildCocoaPods))
+            {
+                buildBuilderConfig.BuildCocoaPods = buildCocoaPods;
+                AdvancedProjectBuilder.LogMessage($"BuildCocoaPods: '{buildCocoaPods}'");
             }
         }
 
@@ -376,7 +413,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 
             return text;
         }
-        
+
         private static string[] SplitParameter(string parameter)
         {
             return parameter.Split(ArgumentSplitSign);

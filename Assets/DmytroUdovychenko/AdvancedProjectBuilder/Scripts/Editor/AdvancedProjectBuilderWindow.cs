@@ -17,16 +17,16 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
     public class AdvancedProjectBuilderWindow : EditorWindow
     {
         private string m_buildPath;
-        
+
         private enum ViewMode { ListViewMode, EditMode }
 
-        private ViewMode m_currentMode = ViewMode.ListViewMode;
+        private ViewMode                     m_currentMode = ViewMode.ListViewMode;
         private AdvancedProjectBuilderConfig m_currentExportSettings;
-        
         private List<AdvancedProjectBuilderConfig> m_buildSettingsList = new List<AdvancedProjectBuilderConfig>();
-        private ReorderableList m_configurationsList;
         private AdvancedProjectBuilderSettingsMain m_settingsMain;
-        private Vector2 m_editScrollPos = Vector2.zero; // Persistent scroll position
+        private ReorderableList                    m_configurationsList;
+
+        private Vector2 m_editScrollPos = Vector2.zero;
 
         [MenuItem(AdvancedProjectBuilderSettings.MenuButtonPath)]
         public static void ShowWindow()
@@ -69,36 +69,40 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 false, // Don't display add button
                 false  // Don't display remove button
             );
-            
+
             m_configurationsList.drawHeaderCallback = (Rect rect) =>
             {
                 EditorGUI.LabelField(rect, "Build Tool Configurations");
             };
-            
+
             m_configurationsList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
             {
-                if (index >= m_buildSettingsList.Count) return;
+                if (index >= m_buildSettingsList.Count)
+                {
+                    return;
+                }
 
                 AdvancedProjectBuilderConfig settings = m_buildSettingsList[index];
 
                 // Adjust rect for padding
-                float padding = 5f;
-                rect.y += padding;
-                rect.height -= padding * 1f;
+                float padding = AdvancedProjectBuilderSettings.Padding;
+                rect.y       += padding;
+                rect.height  -= padding * 1f;
 
                 // Calculate widths
-                float buildButton = 80f;
-                float openButtonWidth = 70f;
-                float duplicateButtonWidth = 70f;
-                float deleteButtonWidth = 50f;
-                float spacing = 50f;
+                float buildButton          = AdvancedProjectBuilderSettings.BuildButton;
+                float openButtonWidth      = AdvancedProjectBuilderSettings.OpenButtonWidth;
+                float duplicateButtonWidth = AdvancedProjectBuilderSettings.DuplicateButtonWidth;
+                float deleteButtonWidth    = AdvancedProjectBuilderSettings.DeleteButtonWidth;
+                float spacing              = AdvancedProjectBuilderSettings.Spacing;
+
                 float objectFieldWidth = rect.width - (buildButton + openButtonWidth + duplicateButtonWidth + deleteButtonWidth + spacing);
 
                 // Object field
                 Rect objectFieldRect = new Rect(rect.x, rect.y, objectFieldWidth, rect.height);
                 EditorGUI.ObjectField(objectFieldRect, settings, typeof(AdvancedProjectBuilderConfig), false);
                 Color originalColor = GUI.backgroundColor;
-                
+
                 // "Build" button
                 Rect buildButtonRect = new Rect(rect.x + objectFieldWidth + 10f, rect.y, buildButton, rect.height);
                 GUI.backgroundColor = Color.green;
@@ -138,7 +142,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 }
                 GUI.backgroundColor = originalColor;
             };
-            
+
             m_configurationsList.onReorderCallback = (ReorderableList list) =>
             {
                 SaveSettingsOrder();
@@ -158,13 +162,13 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             {
                 CreateNewConfiguration();
             }
-            
+
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(10);
             EditorGUILayout.BeginHorizontal();
-            
+
             EditorGUILayout.LabelField("Build Path:", GUILayout.Width(70));
-            
+
             if (GUILayout.Button("Select Folder...", GUILayout.Width(120)))
             {
                 string selectedPath = EditorUtility.OpenFolderPanel("Select Build Folder", m_buildPath, "");
@@ -175,12 +179,12 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                     EditorUtility.SetDirty(this);
                 }
             }
-            
+
             EditorGUILayout.LabelField(string.IsNullOrEmpty(m_buildPath) ? "Not Selected" : m_buildPath);
             EditorGUILayout.EndHorizontal();
 
             GUILayout.Space(10);
-            
+
             m_configurationsList.DoLayoutList();
         }
 
@@ -191,24 +195,24 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         private void DrawEditMode()
         {
             m_editScrollPos = EditorGUILayout.BeginScrollView(m_editScrollPos);
-            
+
             GUILayout.Space(10);
             EditorGUILayout.BeginHorizontal();
             Color originalColor = GUI.backgroundColor;
-            
+
             if (GUILayout.Button("Back"))
             {
                 m_currentMode = ViewMode.ListViewMode;
                 LoadConfigurations();
             }
-            
+
             GUI.backgroundColor = Color.green;
             if (GUILayout.Button("Build"))
             {
                 MakeBuild(m_currentExportSettings);
             }
             GUI.backgroundColor = originalColor;
-            
+
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(10);
 
@@ -220,9 +224,10 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             }
 
             // Edit Configuration Name
-            string assetPath = AssetDatabase.GetAssetPath(m_currentExportSettings);
-            string assetName = Path.GetFileNameWithoutExtension(assetPath);
+            string assetPath    = AssetDatabase.GetAssetPath(m_currentExportSettings);
+            string assetName    = Path.GetFileNameWithoutExtension(assetPath);
             string newAssetName = EditorGUILayout.TextField("Config Name:", assetName);
+
             if (newAssetName != assetName && !string.IsNullOrEmpty(newAssetName))
             {
                 string newAssetPath = Path.Combine(Path.GetDirectoryName(assetPath), newAssetName + ".asset");
@@ -234,7 +239,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             }
 
             GUILayout.Space(5);
-            
+
             if (m_currentExportSettings != null)
             {
                 EditorGUI.BeginChangeCheck();
@@ -247,7 +252,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                     EditorUtility.SetDirty(m_currentExportSettings);
                 }
             }
-            
+
             EditorGUILayout.EndScrollView();
         }
 
@@ -281,14 +286,14 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                 Debug.Log($"{AdvancedProjectBuilderSettings.DebugName}: Saved new configuration order.");
             }
         }
-        
+
         /// <summary>
         /// Loads all BuildToolSettings configurations based on the saved order.
         /// </summary>
         private void LoadConfigurations()
         {
             m_buildSettingsList.Clear();
-            
+
             //If has list of settings
             if (m_settingsMain != null && m_settingsMain.orderedSettings != null && m_settingsMain.orderedSettings.Count > 0)
             {
@@ -297,31 +302,28 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                     if (settings != null)
                     {
                         m_buildSettingsList.Add(settings);
-                        
                     }
-                    
                 }
-                
+
                 List<AdvancedProjectBuilderConfig> foundInFolder = AdvancedProjectBuilderSettings.FindAllBuildToolSettings();
-                
+
                 foreach (AdvancedProjectBuilderConfig settings in foundInFolder)
                 {
                     if (!m_buildSettingsList.Contains(settings))
                     {
                         m_buildSettingsList.Add(settings);
                         m_settingsMain.orderedSettings.Add(settings);
-                        
                     }
                 }
             }
             else
             {
                 List<AdvancedProjectBuilderConfig> foundInFolder = AdvancedProjectBuilderSettings.FindAllBuildToolSettings();
-                
+
                 foreach (AdvancedProjectBuilderConfig settings in foundInFolder)
                 {
                     m_buildSettingsList.Add(settings);
-                    
+
                     if (m_settingsMain != null)
                     {
                         if (m_settingsMain.orderedSettings == null)
@@ -332,13 +334,13 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
                     }
                 }
             }
-            
+
             if (m_configurationsList != null)
             {
-                m_configurationsList.list = m_buildSettingsList;
+                m_configurationsList.list  = m_buildSettingsList;
                 m_configurationsList.index = -1;
             }
-            
+
             SaveSettingsOrder();
         }
 
@@ -390,9 +392,9 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 
             // Generate a unique asset path
             string originalPath = AssetDatabase.GetAssetPath(original);
-            string directory = Path.GetDirectoryName(originalPath);
+            string directory    = Path.GetDirectoryName(originalPath);
             string originalName = Path.GetFileNameWithoutExtension(originalPath);
-            string newName = AssetDatabase.GenerateUniqueAssetPath($"{directory}/{originalName}_Copy.asset");
+            string newName      = AssetDatabase.GenerateUniqueAssetPath($"{directory}/{originalName}_Copy.asset");
 
             // Create the asset
             AssetDatabase.CreateAsset(duplicate, newName);
@@ -457,9 +459,9 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             {
                 Debug.LogError($"Build path is empty.");
             }
-            
+
             Debug.Log($"{AdvancedProjectBuilderSettings.DebugName}: Build process initiated for '{advancedProjectBuilderConfig.name}'.");
-            
+
             AdvancedProjectBuilder.Build(advancedProjectBuilderConfig);
         }
     }

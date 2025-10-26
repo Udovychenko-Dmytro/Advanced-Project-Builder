@@ -12,16 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e9c5d8288a54e93acd442b1a05613e, type: 3}
   m_Name: iOS_Debug
   m_EditorClassIdentifier: 
-  BuildTarget: 9
-  BuildOptions: 524289
-  BuildConfigType: 1
-  DefineSymbols:
-  - DEBUG
-  OverrideUnityServiceId: 0
-  UnityProjectId: 
-  UnityProjectOrganizationId: 
-  OverrideBundleId: 1
-  BundleId: com.dmytroudovychenko.iostest
   UseAppBundle: 0
   SplitApplicationBinary: 0
   UseKeystore: 0
@@ -29,5 +19,20 @@ MonoBehaviour:
   AndroidKeystorePass: 
   AndroidKeyaliasName: 
   AndroidKeyaliasPass: 
+  BuildTarget: 9
+  BuildOptions: 524289
+  BuildConfigType: 1
+  DefineSymbols:
+  - DEBUG
+  CreateZip: 0
+  OverrideProductName: 0
+  ProductName: 
+  OverrideUnityServiceId: 0
+  UnityProjectId: 
+  UnityProjectOrganizationId: 
+  UnityProjectName: 
+  OverrideBundleId: 1
+  BundleId: com.dmytroudovychenko.iostest
   EnableAutomaticSigning: 1
   AppleDeveloperTeamID: 123team456
+  BuildCocoaPods: 1

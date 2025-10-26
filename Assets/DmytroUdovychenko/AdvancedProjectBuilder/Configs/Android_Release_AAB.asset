@@ -12,16 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02e9c5d8288a54e93acd442b1a05613e, type: 3}
   m_Name: Android_Release_AAB
   m_EditorClassIdentifier: 
-  BuildTarget: 13
-  BuildOptions: 524288
-  BuildConfigType: 3
-  DefineSymbols:
-  - RELEASE
-  OverrideUnityServiceId: 0
-  UnityProjectId: 
-  UnityProjectOrganizationId: 
-  OverrideBundleId: 1
-  BundleId: com.android.aab
   UseAppBundle: 1
   SplitApplicationBinary: 0
   UseKeystore: 0
@@ -29,5 +19,20 @@ MonoBehaviour:
   AndroidKeystorePass: 
   AndroidKeyaliasName: 
   AndroidKeyaliasPass: 
+  BuildTarget: 13
+  BuildOptions: 524288
+  BuildConfigType: 3
+  DefineSymbols:
+  - RELEASE
+  CreateZip: 0
+  OverrideProductName: 0
+  ProductName: 
+  OverrideUnityServiceId: 0
+  UnityProjectId: 
+  UnityProjectOrganizationId: 
+  UnityProjectName: 
+  OverrideBundleId: 1
+  BundleId: com.android.aab
   EnableAutomaticSigning: 0
   AppleDeveloperTeamID: 
+  BuildCocoaPods: 0

@@ -2,7 +2,7 @@
 
 set UNITY_PATH=D:\Unity\2021.3.43f1\Editor\Unity.exe
 set PROJECT_PATH=D:\Dev\GIT\!My\advanced-project-builder
-set BUILD_METHOD=AdvancedProjectBuilderCommandLineRunner.Build
+set BUILD_METHOD=DmytroUdovychenko.AdvancedProjectBuilderTool.AdvancedProjectBuilderCommandLine.Build
 set BUILD_PATH_NAME=D:\Dev\Builds
 set PRODUCT_NAME=AdvancedProjectBuilder
 set BUILD_FILE_NAME=Commandline-Android.apk
@@ -17,6 +17,7 @@ set BUILD_FILE_NAME=Commandline-Android.apk
   -BUILD_PATH="%BUILD_PATH_NAME%\\%BUILD_FILE_NAME%" ^
   -BUILD_PLATFORM="Android" ^
   -BUILD_OPTION="Development;CompressWithLz4HC" ^
+  -CREATE_ZIP="true" ^
   -UNITY_SERVICE_ID_OVERRIDE="true" ^
   -UNITY_SERVICE_PROJECT_ID="b6dd78fa-3c9f-4134-9b80-77b07dc4b0e2" ^
   -UNITY_SERVICE_ORGANIZATION_ID="blabla-studio" ^

@@ -6,6 +6,8 @@
 // © 2025 Dmytro Udovychenko. All rights reserved.
 // ====================================================
 
+using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -15,6 +17,8 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 {
     public partial class AdvancedProjectBuilder
     {
+        private static IPlatformSpecifics platformBase = new BasePlatformExtension();
+
         public static void Build(AdvancedProjectBuilderConfig buildBuilderConfig)
         {
             if (buildBuilderConfig == null)
@@ -25,217 +29,166 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
 
             PrepareBuild(buildBuilderConfig);
         }
-        
-        private static void PrepareBuild(AdvancedProjectBuilderConfig settings)
+
+        private static void PrepareBuild(AdvancedProjectBuilderConfig config)
         {
-            EnsurePlatformIsAndroid(settings);
-            SetProjectName(settings);
-            SetDefineSymbols(settings);
-            SetUnityCloudId(settings);
-            SetBundleId(settings);
-            SetBuildVersion(settings);
-            
-            SetPlatformSpecifics(settings);
-            
-            if (string.IsNullOrEmpty(settings.BuildPath))
+            EnsurePlatformIsCorrect(config);
+            SetPlatformBase(config);
+            SetPlatformSpecifics(config);
+
+            if (string.IsNullOrEmpty(config.BuildPath))
             {
                 LogError("Build path is empty. Please specify a valid file path.");
                 return;
             }
 
             string buildPath;
-            
-            if (settings.IsCommandLineBuild == false)
+            if (config.IsCommandLineBuild == false)
             {
-                string version  = PlayerSettings.bundleVersion;
-                string buildNumber = GetBuildNumber(settings);
-                string folderPath = $"{settings.BuildPath}/{settings.BuildTarget.ToString()}";
-                string fileExtension = GetFileExtension(settings);
-                buildPath = $"{folderPath}/{PlayerSettings.productName}_v{version}({buildNumber})_{settings.BuildConfigType}{fileExtension}";
+                string version       = PlayerSettings.bundleVersion;
+                string buildNumber   = GetBuildNumber(config);
+                string folderPath    = $"{config.BuildPath}/{config.BuildTarget.ToString()}";
+                string fileExtension = GetFileExtension(config);
+                buildPath = $"{folderPath}/{PlayerSettings.productName}_v{version}({buildNumber})_{config.BuildConfigType}{fileExtension}";
                 LogMessage($"BuildPath: {buildPath}");
             }
             else
             {
-                buildPath = settings.BuildPath;
-                LogMessage($"BuildPath: {settings.BuildPath}");
+                buildPath = config.BuildPath;
+                LogMessage($"BuildPath: {config.BuildPath}");
             }
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
             {
-                scenes = GetScenes(),
-                locationPathName = buildPath,
-                target  = settings.BuildTarget,
-                options = settings.BuildOptions
+                scenes  = GetScenes(),
+                target  = config.BuildTarget,
+                options = config.BuildOptions,
+                locationPathName = buildPath
             };
 
-            StartBuild(buildPlayerOptions);
+            StartBuild(buildPlayerOptions, config);
         }
-        
-        private static void StartBuild(BuildPlayerOptions buildPlayerOptions)
+
+        private static void StartBuild(BuildPlayerOptions buildPlayerOptions, AdvancedProjectBuilderConfig config)
         {
-            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            BuildReport report   = BuildPipeline.BuildPlayer(buildPlayerOptions);
             BuildSummary summary = report.summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
                 LogMessage($"Build time - {summary.totalTime.Hours}h:{summary.totalTime.Minutes}m:{summary.totalTime.Seconds}s");
+                TriggerPostBuildProcess(buildPlayerOptions, report, config);
                 OpenBuildFolder(buildPlayerOptions.locationPathName);
             }
-            
-            if (summary.result == BuildResult.Failed)
+            else if (summary.result == BuildResult.Failed)
             {
                 LogError("Build failed");
             }
         }
-        
-        private static void EnsurePlatformIsAndroid(AdvancedProjectBuilderConfig settings)
+
+        private static void EnsurePlatformIsCorrect(AdvancedProjectBuilderConfig settings)
         {
             if (settings.BuildTarget != EditorUserBuildSettings.activeBuildTarget)
             {
                 BuildTargetGroup group = BuildPipeline.GetBuildTargetGroup(settings.BuildTarget);
-                
                 EditorUserBuildSettings.SwitchActiveBuildTarget(group, settings.BuildTarget);
                 LogMessage($"Switched platform to {settings.BuildTarget}.");
             }
         }
 
-        private static void SetPlatformSpecifics(AdvancedProjectBuilderConfig settings)
+        private static void SetPlatformBase(AdvancedProjectBuilderConfig settings)
         {
-            switch (settings.BuildTarget)
-            {
-                case BuildTarget.Android:
-                    SetPlatformSpecificsAndroid(settings);
-                    break;
-                case BuildTarget.StandaloneOSX:
-                    SetPlatformSpecificsIos(settings);
-                    break;
-                default:
-                    break;
-            }
-        }
-        
-        private static void SetUnityCloudId(AdvancedProjectBuilderConfig settings)
-        {
-            if (settings.OverrideUnityServiceId)
-            {
-                SerializedObject projectSettings        = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath(AdvancedProjectBuilderSettings.ProjectSettingsPath)[0]);
-                SerializedProperty projectIDProp        = projectSettings.FindProperty(AdvancedProjectBuilderSettings.CloudProjectIDProperty);
-                SerializedProperty organizationProperty = projectSettings.FindProperty(AdvancedProjectBuilderSettings.CloudOrganizationIDProperty);
-                SerializedProperty productNameProperty  = projectSettings.FindProperty(AdvancedProjectBuilderSettings.CloudProjectNameProperty);
-                
-                projectIDProp.stringValue        = settings.UnityProjectId;
-                organizationProperty.stringValue = settings.UnityProjectOrganizationId;
-                productNameProperty.stringValue  = settings.UnityProjectName;
-                projectSettings.ApplyModifiedProperties();
-                
-                LogMessage($"Set UnityCloudId: '{settings.UnityProjectId}' / '{settings.UnityProjectOrganizationId}' / '{settings.UnityProjectName}'.");
-            }
+            platformBase.SetPlatformSpecifics(settings);
         }
 
-        private static void SetBundleId(AdvancedProjectBuilderConfig settings)
+        private static void SetPlatformSpecifics(AdvancedProjectBuilderConfig settings)
         {
-            if (settings.OverrideBundleId)
+            IPlatformSpecifics platformSpecifics = AdvancedProjectBuilderSettings.CreatePlatformSpecifics(settings.BuildTarget);
+
+            if (platformSpecifics != null)
             {
-                PlayerSettings.applicationIdentifier = settings.BundleId;
-                LogMessage($"Set applicationIdentifier: {settings.BundleId}");
-            }
-        }
-        
-        private static void SetBuildVersion(AdvancedProjectBuilderConfig settings)
-        {
-            if (!string.IsNullOrEmpty(settings.BuildVersion))
-            {
-                PlayerSettings.bundleVersion = settings.BuildVersion;
-                LogMessage($"Set BuildVersion: {settings.BuildVersion}");
-            }
-            
-            if (!string.IsNullOrEmpty(settings.BundleVersionNumber))
-            {
-                if (settings.BuildTarget == BuildTarget.Android)
-                {
-                    int bundleCode = int.Parse(settings.BundleVersionNumber);
-                    PlayerSettings.Android.bundleVersionCode = bundleCode;
-                    LogMessage($"Set Android bundleVersionCode: {bundleCode}");
-                }
-                
-                if (settings.BuildTarget == BuildTarget.iOS)
-                {
-                    PlayerSettings.iOS.buildNumber = settings.BundleVersionNumber;
-                    LogMessage($"Set iOS buildNumber: {settings.BundleVersionNumber}");
-                }
-                
-                if (settings.BuildTarget == BuildTarget.StandaloneOSX)
-                {
-                    PlayerSettings.macOS.buildNumber = settings.BundleVersionNumber;
-                    LogMessage($"Set Macos buildNumber: {settings.BundleVersionNumber}");
-                }
+                platformSpecifics.SetPlatformSpecifics(settings);
             }
         }
 
         private static string GetBuildNumber(AdvancedProjectBuilderConfig settings)
         {
             string buildNumber = string.Empty;
-            
-            if (settings.BuildTarget == BuildTarget.Android)
+            switch (settings.BuildTarget)
             {
-                buildNumber = PlayerSettings.Android.bundleVersionCode.ToString();
+                case BuildTarget.Android:
+                    buildNumber = PlayerSettings.Android.bundleVersionCode.ToString();
+                    break;
+                case BuildTarget.iOS:
+                    buildNumber = PlayerSettings.iOS.buildNumber;
+                    break;
+                case BuildTarget.StandaloneOSX:
+                    buildNumber = PlayerSettings.macOS.buildNumber;
+                    break;
             }
-                
-            if (settings.BuildTarget == BuildTarget.iOS)
-            {
-                buildNumber = PlayerSettings.iOS.buildNumber;
-            }
-                
-            if (settings.BuildTarget == BuildTarget.StandaloneOSX)
-            {
-                buildNumber = PlayerSettings.macOS.buildNumber;
-            }
-            
             return buildNumber;
         }
-        
-        private static void SetProjectName(AdvancedProjectBuilderConfig settings)
+
+        private static void OpenBuildFolder(string path)
         {
-            if (settings.OverrideProductName)
+            string folderPath = Path.GetDirectoryName(path);
+            EditorUtility.RevealInFinder(folderPath);
+        }
+
+        private static void TriggerPostBuildProcess(BuildPlayerOptions buildPlayerOptions, BuildReport report, AdvancedProjectBuilderConfig config)
+        {
+            LogMessage("Triggering post-build process...");
+            string path = report.summary.outputPath;
+
+            //TODO: move to platform specifics
+            if (   report.summary.platform == BuildTarget.StandaloneWindows
+                || report.summary.platform == BuildTarget.StandaloneWindows64)
             {
-                SerializedObject projectSettings   = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath(AdvancedProjectBuilderSettings.ProjectSettingsPath)[0]);
-                SerializedProperty projectNameProp = projectSettings.FindProperty(AdvancedProjectBuilderSettings.ProductNameProperty);
-                
-                projectNameProp.stringValue = settings.ProductName;
-                projectSettings.ApplyModifiedProperties();
-                
-                LogMessage($"Set ProjectName: '{settings.ProductName}'");
+                DirectoryInfo directory = Directory.GetParent(path);
+                if (directory != null)
+                {
+                    path = directory.FullName;
+                }
+            }
+
+            TriggerPostBuildProcessPlatformSpecifics(buildPlayerOptions, report, config);
+            CreateArchive(config, path);
+        }
+
+        private static void TriggerPostBuildProcessPlatformSpecifics(BuildPlayerOptions buildPlayerOptions,
+                                                                     BuildReport        report,
+                                                                     AdvancedProjectBuilderConfig config)
+        {
+            try
+            {
+                IPlatformSpecifics platformSpecifics = AdvancedProjectBuilderSettings.CreatePlatformSpecifics(report.summary.platform);
+                if (platformSpecifics != null)
+                {
+                    platformSpecifics.OnPostprocessBuild(buildPlayerOptions, report, config);
+                }
+                else
+                {
+                    LogWarning($"No platform specifics found for '{report.summary.platform}'.");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 
-        public static void SetDefineSymbols(BuildTargetGroup targetGroup, string[] define)
+        private static void CreateArchive(AdvancedProjectBuilderConfig config, string path)
         {
-            if (define == null)
+            if (config.CreateZip)
             {
-                LogError($"{AdvancedProjectBuilderSettings.DebugName}: define == NULL.");
-                return;
+                ArchiveUtility.CreateArchive(path);
             }
-            string defineSymbols = string.Join(";", define);
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, defineSymbols);
-            LogMessage($"Set DefineSymbols: {defineSymbols}");
-        }
-        
-        private static void SetDefineSymbols(AdvancedProjectBuilderConfig settings)
-        {
-            BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(settings.BuildTarget);
-            SetDefineSymbols(targetGroup, settings.DefineSymbols);
-        }
-        
-        private static void OpenBuildFolder(string path)
-        {
-            string folderPath = System.IO.Path.GetDirectoryName(path);
-            EditorUtility.RevealInFinder(folderPath);
         }
 
         private static string[] GetScenes()
         {
-            return EditorBuildSettings.scenes.Where(
-                scene => scene.enabled).Select(scene => scene.path).ToArray();
+            return EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
         }
 
         private static string GetFileExtension(AdvancedProjectBuilderConfig settings)
@@ -243,22 +196,16 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
             switch (settings.BuildTarget)
             {
                 case BuildTarget.Android:
-                    if (EditorUserBuildSettings.buildAppBundle)
-                        return ".aab";
-                    else
-                        return ".apk";
-
+                    return EditorUserBuildSettings.buildAppBundle ? ".aab" : ".apk";
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
-                    return ".exe";
-
+                    return $"/{Application.productName}.exe";
                 case BuildTarget.StandaloneOSX:
                     return ".app";
-
                 case BuildTarget.StandaloneLinux64:
                     return ".x86_64";
-
                 default:
+                    LogWarning($"File extension not defined for platform {settings.BuildTarget}");
                     return "";
             }
         }
@@ -271,6 +218,11 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         public static void LogError(string message)
         {
             Debug.LogError($"{AdvancedProjectBuilderSettings.DebugName} - {message}");
+        }
+
+        public static void LogWarning(string message)
+        {
+            Debug.LogWarning($"{AdvancedProjectBuilderSettings.DebugName} - {message}");
         }
     }
 }
