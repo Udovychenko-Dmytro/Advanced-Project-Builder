@@ -9,7 +9,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         private const string ShellPath      = "/bin/zsh";
         private const string ShellArguments = "-l -c"; // l-login shell, c-command
         private const string ShellEncoding  = "en_US.UTF-8";
-        private const string ShelLogName    = "[ShellRunner]";
+        private const string ShellLogName   = "[ShellRunner]";
 
         public static int Run(string workingDir, string command)
         {
@@ -46,7 +46,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         {
             if (!string.IsNullOrEmpty(eventArgs.Data))
             {
-                AdvancedProjectBuilder.LogMessage($"{ShelLogName}: {eventArgs.Data}");
+                AdvancedProjectBuilder.LogMessage($"{ShellLogName}: {eventArgs.Data}");
             }
         }
 
@@ -54,7 +54,7 @@ namespace DmytroUdovychenko.AdvancedProjectBuilderTool
         {
             if (!string.IsNullOrEmpty(eventArgs.Data))
             {
-                AdvancedProjectBuilder.LogWarning($"{ShelLogName}: Error - {eventArgs.Data}");
+                AdvancedProjectBuilder.LogWarning($"{ShellLogName}: Error - {eventArgs.Data}");
             }
         }
     }
